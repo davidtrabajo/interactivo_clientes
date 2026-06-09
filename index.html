@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Intra · Base de Conocimiento Interactiva</title>
+<meta name="description" content="Onboarding interactivo para construir la Base de Conocimiento de tu agente de IA — by intralabs.ai" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   INTRA · Sistema de diseño (inspirado en intralabs.ai)
+   ============================================================ */
+:root{
+  --bg:#01101d;            /* azul marino casi negro */
+  --bg-2:#071b2e;
+  --bg-3:#0d2740;
+  --surface:rgba(255,255,255,.04);
+  --surface-2:rgba(255,255,255,.06);
+  --glass:rgba(10,26,46,.55);
+  --border:rgba(255,255,255,.10);
+  --border-strong:rgba(255,255,255,.18);
+  --accent:#0099ff;       /* azul eléctrico */
+  --accent-2:#36b3ff;
+  --accent-light:#95bcf4;
+  --warm:#d46f4b;         /* terracota cálido */
+  --warm-soft:#ffd9cc;
+  --cream:#fff3f0;
+  --text:#ffffff;
+  --text-soft:rgba(255,255,255,.72);
+  --text-dim:rgba(255,255,255,.48);
+  --ok:#34d399;
+  --err:#ff6b6b;
+  --radius:18px;
+  --radius-sm:12px;
+  --shadow:0 24px 60px -20px rgba(0,0,0,.7);
+  --glow:0 0 0 1px rgba(0,153,255,.4),0 8px 30px -6px rgba(0,153,255,.45);
+  --serif:'Source Serif 4',Georgia,serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* Fondo con gradientes animados (aurora) */
+.bg-aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;background:
+  radial-gradient(1200px 600px at 12% -10%, rgba(0,153,255,.18), transparent 60%),
+  radial-gradient(900px 500px at 100% 0%, rgba(149,188,244,.12), transparent 55%),
+  radial-gradient(800px 600px at 50% 120%, rgba(212,111,75,.10), transparent 60%),
+  linear-gradient(180deg,#01101d 0%,#02141f 55%,#01101d 100%);}
+.bg-grid{position:fixed;inset:0;z-index:-1;opacity:.35;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:48px 48px;mask-image:radial-gradient(circle at 50% 30%,#000,transparent 80%);}
+.orb{position:fixed;border-radius:50%;filter:blur(60px);z-index:-1;opacity:.5;animation:float 16s ease-in-out infinite}
+.orb.a{width:420px;height:420px;background:rgba(0,153,255,.35);top:-120px;left:-80px}
+.orb.b{width:360px;height:360px;background:rgba(149,188,244,.25);bottom:-140px;right:-60px;animation-delay:-6s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-30px) scale(1.08)}}
+
+/* ============================ Layout ============================ */
+.app{max-width:1180px;margin:0 auto;padding:28px 22px 80px;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:-.02em}
+.brand .logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),#0066cc);box-shadow:var(--glow);font-weight:800;font-size:20px}
+.brand small{display:block;font-weight:400;font-size:11px;color:var(--text-dim);letter-spacing:.14em;text-transform:uppercase}
+.save-pill{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-dim);
+  background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:999px;transition:.3s}
+.save-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim);transition:.3s}
+.save-pill.saved{color:var(--ok);border-color:rgba(52,211,153,.3)}
+.save-pill.saved .dot{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+
+/* ============================ Progreso ============================ */
+.progress-wrap{margin-bottom:30px}
+.progress-track{height:7px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+.progress-bar{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-light));
+  box-shadow:0 0 18px rgba(0,153,255,.6);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.progress-meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;color:var(--text-dim)}
+.steps-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.step-chip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-dim);cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);padding:7px 13px;border-radius:999px;transition:.25s;user-select:none}
+.step-chip:hover{border-color:var(--border-strong);color:var(--text-soft)}
+.step-chip .n{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;
+  background:rgba(255,255,255,.08);transition:.25s}
+.step-chip.active{color:#fff;border-color:rgba(0,153,255,.55);background:rgba(0,153,255,.12);box-shadow:0 0 0 1px rgba(0,153,255,.25)}
+.step-chip.active .n{background:var(--accent)}
+.step-chip.done .n{background:var(--ok);color:#04241a}
+.step-chip.done .n::after{content:'✓'}
+.step-chip.done .n span{display:none}
+
+/* ============================ Tarjeta del paso ============================ */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--shadow);overflow:hidden}
+.card-head{padding:34px 38px 24px;border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent-light);margin-bottom:14px}
+.eyebrow .ico{font-size:16px}
+.card-head h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,4vw,38px);line-height:1.1;
+  letter-spacing:-.02em;margin-bottom:10px}
+.card-head h1 .hl{color:var(--accent-light)}
+.card-head p{color:var(--text-soft);max-width:62ch;font-size:15.5px}
+.card-body{padding:30px 38px 36px}
+
+/* ============================ Campos ============================ */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.field{display:flex;flex-direction:column;gap:8px;animation:rise .5s both}
+.field.full{grid-column:1/-1}
+.field label{font-size:13.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+.field label .req{color:var(--warm);font-size:14px}
+.field .help{font-size:12.5px;color:var(--text-dim);font-weight:400}
+.field input,.field textarea,.field select{
+  width:100%;font-family:inherit;font-size:15px;color:var(--text);
+  background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:13px 15px;transition:.2s;outline:none}
+.field textarea{resize:vertical;min-height:96px;line-height:1.55}
+.field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.32)}
+.field input:focus,.field textarea:focus,.field select:focus{
+  border-color:var(--accent);background:rgba(0,153,255,.07);box-shadow:0 0 0 4px rgba(0,153,255,.14)}
+.field select{appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2395bcf4' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 15px center;padding-right:38px}
+.field select option{background:#071b2e;color:#fff}
+.field.invalid input,.field.invalid textarea{border-color:var(--err);box-shadow:0 0 0 4px rgba(255,107,107,.12)}
+.field .errmsg{font-size:12px;color:var(--err);display:none}
+.field.invalid .errmsg{display:block}
+
+/* Toggle con detalle */
+.toggle-field{grid-column:1/-1;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:16px 18px;transition:.25s}
+.toggle-field.on{border-color:rgba(0,153,255,.4);background:rgba(0,153,255,.06)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.toggle-row .tl{display:flex;flex-direction:column;gap:3px}
+.toggle-row .tl strong{font-size:14.5px;font-weight:600}
+.toggle-row .tl span{font-size:12.5px;color:var(--text-dim)}
+.switch{position:relative;width:50px;height:28px;flex-shrink:0;cursor:pointer}
+.switch input{opacity:0;width:0;height:0}
+.switch .slider{position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:999px;transition:.25s;border:1px solid var(--border)}
+.switch .slider::before{content:'';position:absolute;width:20px;height:20px;left:4px;top:3px;background:#fff;border-radius:50%;transition:.25s}
+.switch input:checked + .slider{background:var(--accent);border-color:transparent}
+.switch input:checked + .slider::before{transform:translateX(22px)}
+.toggle-detail{margin-top:14px;display:none}
+.toggle-field.on .toggle-detail{display:block;animation:rise .35s both}
+
+/* Repetidor (listas dinámicas) */
+.repeater{grid-column:1/-1;display:flex;flex-direction:column;gap:14px}
+.rep-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rep-head .rt{font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+.rep-head .rt .count{font-size:11px;color:var(--text-dim);background:var(--surface);padding:2px 9px;border-radius:999px;border:1px solid var(--border)}
+.rep-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:18px 18px 16px;position:relative;animation:rise .4s both}
+.rep-item .rep-num{position:absolute;top:-10px;left:16px;font-size:11px;font-weight:700;letter-spacing:.05em;
+  background:var(--accent);color:#fff;padding:3px 10px;border-radius:999px;box-shadow:var(--glow)}
+.rep-del{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(255,107,107,.08);color:var(--err);cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.2s}
+.rep-del:hover{background:rgba(255,107,107,.18);border-color:var(--err)}
+.rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.rep-grid .field.full{grid-column:1/-1}
+.cap-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;
+  background:rgba(0,0,0,.18);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:4px}
+.cap-grid .cap{display:flex;flex-direction:column;gap:6px}
+.cap-grid .cap label{font-size:12px;color:var(--text-soft);font-weight:500}
+.cap-grid .cap input{padding:9px 11px;font-size:14px}
+.add-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:9px;font-family:inherit;font-size:13.5px;
+  font-weight:600;color:var(--accent-light);background:rgba(0,153,255,.08);border:1px dashed rgba(0,153,255,.45);
+  padding:11px 18px;border-radius:var(--radius-sm);cursor:pointer;transition:.22s}
+.add-btn:hover{background:rgba(0,153,255,.16);border-style:solid;transform:translateY(-1px)}
+.section-note{grid-column:1/-1;display:flex;gap:12px;background:rgba(149,188,244,.07);border:1px solid rgba(149,188,244,.22);
+  border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:var(--accent-light)}
+.section-note .ico{font-size:18px;flex-shrink:0}
+.subhead{grid-column:1/-1;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-dim);margin-top:6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+
+/* ============================ Footer / navegación ============================ */
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:30px}
+.btn{font-family:inherit;font-weight:600;font-size:15px;border-radius:var(--radius-sm);padding:14px 26px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);transition:.22s;display:inline-flex;
+  align-items:center;gap:10px}
+.btn:hover{border-color:var(--border-strong);background:var(--surface-2)}
+.btn.ghost{background:transparent}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#0072d6);border-color:transparent;color:#fff;
+  box-shadow:0 10px 30px -8px rgba(0,153,255,.6)}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px rgba(0,153,255,.75)}
+.btn.primary:active{transform:translateY(0)}
+.btn.warm{background:linear-gradient(135deg,var(--warm),#b8542f);border-color:transparent;color:#fff;
+  box-shadow:0 10px 30px -8px rgba(212,111,75,.55)}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-spacer{flex:1}
+
+/* ============================ Intro (paso 0) ============================ */
+.intro{text-align:center;padding:60px 38px 56px}
+.intro .badge{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:.06em;
+  color:var(--accent-light);background:rgba(0,153,255,.1);border:1px solid rgba(0,153,255,.3);
+  padding:8px 16px;border-radius:999px;margin-bottom:26px}
+.intro h1{font-family:var(--serif);font-weight:600;font-size:clamp(34px,6vw,58px);line-height:1.05;
+  letter-spacing:-.025em;margin-bottom:20px}
+.intro h1 .hl{background:linear-gradient(120deg,var(--accent-light),var(--accent));-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent}
+.intro p.lead{font-size:18px;color:var(--text-soft);max-width:60ch;margin:0 auto 36px}
+.intro .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:780px;margin:0 auto 42px;text-align:left}
+.feat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px}
+.feat .fi{font-size:24px;margin-bottom:10px}
+.feat strong{display:block;font-size:15px;margin-bottom:5px}
+.feat span{font-size:13px;color:var(--text-dim)}
+.intro .meta-row{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-bottom:38px;font-size:13.5px;color:var(--text-dim)}
+.intro .meta-row b{color:var(--text)}
+
+/* ============================ Revisión ============================ */
+.review-block{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-sm);
+  margin-bottom:16px;overflow:hidden}
+.review-block .rb-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;
+  cursor:pointer;background:rgba(255,255,255,.02)}
+.review-block .rb-head h3{font-size:15.5px;font-weight:600;display:flex;align-items:center;gap:10px}
+.review-block .rb-head .edit{font-size:12.5px;color:var(--accent-light);font-weight:600}
+.review-block .rb-body{padding:6px 20px 18px;display:grid;grid-template-columns:1fr 1fr;gap:4px 28px}
+.kv{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px}
+.kv .k{color:var(--text-dim);font-size:12.5px;display:block;margin-bottom:2px}
+.kv .v{color:var(--text)}
+.kv.empty .v{color:var(--text-dim);font-style:italic}
+.kv.full{grid-column:1/-1}
+.export-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:26px}
+.export-card{flex:1;min-width:240px;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;gap:8px}
+.export-card .ei{font-size:26px}
+.export-card h4{font-size:16px;font-weight:600}
+.export-card p{font-size:13px;color:var(--text-dim);flex:1}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+  background:var(--bg-3);border:1px solid var(--border-strong);border-radius:12px;padding:14px 22px;font-size:14px;
+  box-shadow:var(--shadow);transition:.35s;z-index:50;display:flex;align-items:center;gap:10px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .ti{color:var(--ok)}
+
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.step-view{animation:rise .45s both}
+
+/* Responsive */
+@media(max-width:720px){
+  .app{padding:20px 14px 70px}
+  .card-head{padding:26px 22px 20px}.card-body{padding:24px 22px 28px}
+  .grid,.rep-grid,.review-block .rb-body{grid-template-columns:1fr}
+  .intro{padding:44px 22px}.intro .feats{grid-template-columns:1fr}
+  .nav-row{flex-direction:column-reverse}.nav-row .btn{width:100%;justify-content:center}.btn-spacer{display:none}
+  .topbar{flex-wrap:wrap}
+}
+/* Print (documento generado se abre en ventana aparte, este print es respaldo) */
+@media print{.bg-aurora,.bg-grid,.orb,.topbar,.progress-wrap,.nav-row,.toast{display:none!important}}
+</style>
+</head>
+<body>
+<div class="bg-aurora"></div>
+<div class="bg-grid"></div>
+<div class="orb a"></div>
+<div class="orb b"></div>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">i</div>
+      <div>intra<small>Base de Conocimiento</small></div>
+    </div>
+    <div class="save-pill" id="savePill"><span class="dot"></span><span id="saveTxt">Guardado automático</span></div>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-meta">
+      <span id="progressLabel">Paso 1</span>
+      <span id="progressPct">0% completado</span>
+    </div>
+    <div class="steps-nav" id="stepsNav"></div>
+  </div>
+
+  <div id="stage"></div>
+</div>
+
+<div class="toast" id="toast"><span class="ti">✓</span><span id="toastTxt"></span></div>
+
+<script>
+/* ============================================================
+   INTRA · Motor del wizard (data-driven, modular por giro)
+   Para clonar otro giro: define un nuevo SCHEMA y cambia ACTIVE_SCHEMA.
+   ============================================================ */
+
+/* ---------- ESQUEMA: HOTEL ---------- */
+const HOTEL_SCHEMA = {
+  giro:'hotel',
+  storageKey:'intra_kb_hotel_v1',
+  steps:[
+    /* 0 · Intro */
+    { id:'intro', tipo:'intro',
+      titulo:'Construyamos el cerebro de tu <span class="hl">agente de IA</span>',
+      lead:'Este asistente recopila toda la información de tu hotel para que tu agente conversacional responda como tu mejor recepcionista — 24/7, sin equivocarse. Tómate tu tiempo: se guarda solo en tu navegador y puedes continuar luego.',
+      feats:[
+        {i:'🧠',t:'Alimenta a tu agente',d:'Cada dato se convierte en una respuesta precisa para tus huéspedes.'},
+        {i:'⚡',t:'Interactivo y guiado',d:'Paso a paso, sin documentos planos ni formatos confusos.'},
+        {i:'📄',t:'Entrega lista',d:'Al terminar descargas el JSON para el sistema y un documento para revisión.'}
+      ],
+      meta:[{k:'⏱️ Duración',v:'10–15 min'},{k:'💾 Progreso',v:'Se guarda solo'},{k:'🔒 Privado',v:'Solo en tu equipo'}]
+    },
+
+    /* 1 · Información general */
+    { id:'general', icon:'🏨', eyebrow:'Identidad del hotel', titulo:'Información <span class="hl">general</span>',
+      subtitulo:'Los datos base de tu propiedad. Son los que tu agente usará para identificarse y orientar al huésped.',
+      fields:[
+        {key:'nombre_oficial',label:'Nombre oficial del hotel',type:'text',req:true,half:true,ph:'Ej. Hampton Inn by Hilton™ Mérida'},
+        {key:'codigo',label:'Código / clave interna',type:'text',half:true,ph:'Ej. MIDHXHX',help:'Código Hilton, PMS o el que uses internamente'},
+        {key:'marca',label:'Marca / cadena',type:'text',half:true,ph:'Ej. Hilton — Hampton Inn'},
+        {key:'categoria',label:'Categoría',type:'select',half:true,options:['','Económico','3 estrellas','4 estrellas','5 estrellas','Gran turismo','Boutique','Resort']},
+        {key:'direccion',label:'Dirección completa',type:'textarea',req:true,full:true,ph:'Calle, número, colonia, ciudad, estado, C.P., país'},
+        {key:'telefono',label:'Teléfono',type:'tel',half:true,req:true,ph:'(+52) 999 964 2345'},
+        {key:'email',label:'Email de contacto',type:'email',half:true,ph:'reservas@tuhotel.com'},
+        {key:'whatsapp',label:'WhatsApp',type:'tel',half:true,ph:'(+52) 1 999 000 0000'},
+        {key:'sitio_web',label:'Sitio web',type:'url',half:true,ph:'https://...'},
+        {key:'checkin',label:'Hora de check-in',type:'time',half:true},
+        {key:'checkout',label:'Hora de check-out',type:'time',half:true},
+        {key:'recepcion',label:'Horario de recepción',type:'text',half:true,ph:'Ej. 24 horas'},
+        {key:'num_habitaciones',label:'Número de habitaciones',type:'number',half:true,ph:'Ej. 130'},
+        {key:'descripcion',label:'Descripción breve del hotel',type:'textarea',full:true,ph:'Un párrafo que describa el hotel, su ubicación y a quién está dirigido. El agente lo usará para presentarlo.'}
+      ]
+    },
+
+    /* 2 · Ubicación y accesos */
+    { id:'ubicacion', icon:'📍', eyebrow:'Dónde estás y cómo llegar', titulo:'Ubicación y <span class="hl">accesos</span>',
+      subtitulo:'Puntos de interés cercanos, aeropuerto, traslados y estacionamiento. Son las preguntas frecuentes #1 de los huéspedes.',
+      fields:[
+        {key:'aeropuerto',label:'Aeropuerto más cercano',type:'text',half:true,ph:'Ej. Aeropuerto Internacional de Mérida (MID)'},
+        {key:'aeropuerto_dist',label:'Distancia al aeropuerto',type:'text',half:true,ph:'Ej. 13 millas / 21 km'},
+        {key:'traslado_aeropuerto',label:'¿Traslado al aeropuerto?',type:'select',half:true,options:['','No disponible','Disponible con costo','Disponible de cortesía','Bajo solicitud']},
+        {key:'traslado_local',label:'Traslado local / shuttle',type:'text',half:true,ph:'Ej. Gratuito en radio de 7 km'},
+        {key:'estacionamiento',label:'Estacionamiento',type:'select',half:true,options:['','De cortesía','Con costo','Valet con costo','Valet de cortesía','No disponible']},
+        {key:'carga_ev',label:'Carga de autos eléctricos',type:'select',half:true,options:['','Disponible','No disponible']},
+        {key:'puntos',type:'repeater',label:'Puntos de interés cercanos',addLabel:'Agregar lugar',
+          item:{ title:'nombre', fields:[
+            {key:'nombre',label:'Lugar',type:'text',half:true,ph:'Ej. Centro de Convenciones Yucatán'},
+            {key:'distancia',label:'Distancia / tiempo',type:'text',half:true,ph:'Ej. 4 min a pie / 1 km'}
+          ]}}
+      ]
+    },
+
+    /* 3 · Servicios */
+    { id:'servicios', icon:'🛎️', eyebrow:'Lo que ofreces', titulo:'Servicios e <span class="hl">instalaciones</span>',
+      subtitulo:'Activa lo que aplica y agrega el detalle. Solo lo encendido se le contará al huésped.',
+      toggles:[
+        {key:'wifi',label:'WiFi gratis',sub:'En habitaciones y áreas comunes',detail:'Detalle (cobertura, velocidad, contraseña…)'},
+        {key:'desayuno',label:'Desayuno',sub:'Incluido / buffet / a la carta',detail:'Horario, tipo y si está incluido'},
+        {key:'restaurante',label:'Restaurante / Bar',sub:'Alimentos y bebidas en sitio',detail:'Nombre, horario y tipo de cocina'},
+        {key:'gimnasio',label:'Gimnasio',sub:'Fitness center',detail:'Horario y equipamiento'},
+        {key:'alberca',label:'Alberca',sub:'Piscina',detail:'Tipo (exterior/climatizada), horario'},
+        {key:'spa',label:'Spa / Wellness',sub:'',detail:'Servicios y horario'},
+        {key:'centro_negocios',label:'Centro de negocios',sub:'',detail:'Equipos y horario'},
+        {key:'salas_reunion',label:'Salas de reuniones',sub:'(El detalle de capacidades va en el paso de Eventos)',detail:'Cantidad y notas generales'},
+        {key:'room_service',label:'Servicio a la habitación',sub:'',detail:'Horario y notas'},
+        {key:'lavanderia',label:'Lavandería / Tintorería',sub:'',detail:'Tiempos y costo'},
+        {key:'accesibilidad',label:'Accesibilidad',sub:'Para personas con discapacidad',detail:'Rampas, habitaciones adaptadas, elevador…'},
+        {key:'mascotas_ok',label:'Pet friendly',sub:'Se permiten mascotas',detail:'(La tarifa va en el paso de Políticas)'}
+      ]
+    },
+
+    /* 4 · Habitaciones */
+    { id:'habitaciones', icon:'🛏️', eyebrow:'Tu inventario', titulo:'Tipos de <span class="hl">habitación</span>',
+      subtitulo:'Agrega cada tipo de habitación. El agente recomendará según huéspedes, camas y presupuesto.',
+      fields:[
+        {key:'habs',type:'repeater',label:'Tipos de habitación',addLabel:'Agregar tipo de habitación',
+          item:{ title:'nombre', fields:[
+            {key:'nombre',label:'Nombre del tipo',type:'text',half:true,ph:'Ej. King Estándar'},
+            {key:'capacidad',label:'Capacidad (personas)',type:'text',half:true,ph:'Ej. 2 adultos'},
+            {key:'camas',label:'Camas',type:'text',half:true,ph:'Ej. 1 King / 2 Queen'},
+            {key:'tamano',label:'Tamaño',type:'text',half:true,ph:'Ej. 28 m²'},
+            {key:'precio_desde',label:'Precio desde (referencia)',type:'text',half:true,ph:'Ej. $1,800 MXN/noche'},
+            {key:'vista',label:'Vista / piso',type:'text',half:true,ph:'Ej. Vista a la ciudad'},
+            {key:'amenidades',label:'Amenidades destacadas',type:'textarea',full:true,ph:'Aire acondicionado, smart TV, caja fuerte, escritorio, cafetera…'}
+          ]}}
+      ]
+    },
+
+    /* 5 · Políticas */
+    { id:'politicas', icon:'📋', eyebrow:'Las reglas de la casa', titulo:'Políticas del <span class="hl">hotel</span>',
+      subtitulo:'Reglas claras = menos malentendidos. El agente las comunicará textualmente cuando se pregunten.',
+      fields:[
+        {key:'mascotas_politica',label:'Política de mascotas',type:'textarea',full:true,ph:'Ej. Se permiten mascotas. Tarifa: $450 MXN + impuestos por noche (no reembolsable). Máx. 2 por habitación.'},
+        {key:'fumadores',label:'Política de fumadores',type:'textarea',full:true,ph:'Ej. Solo en áreas designadas. No hay habitaciones para fumadores.'},
+        {key:'cancelacion',label:'Política de cancelación',type:'textarea',full:true,ph:'Ej. Cancelación gratuita hasta 48 h antes del check-in. Después se cobra la primera noche.'},
+        {key:'edad_minima',label:'Edad mínima para registrarse',type:'text',half:true,ph:'Ej. 18 años'},
+        {key:'metodos_pago',label:'Métodos de pago aceptados',type:'text',half:true,ph:'Ej. Visa, MasterCard, Amex, efectivo'},
+        {key:'deposito',label:'Depósito / garantía',type:'text',half:true,ph:'Ej. Se requiere tarjeta al check-in'},
+        {key:'ninos',label:'Política de niños',type:'text',half:true,ph:'Ej. Menores de 12 sin costo compartiendo habitación'},
+        {key:'extras_politica',label:'Otras políticas importantes',type:'textarea',full:true,ph:'Identificación obligatoria, horarios de alberca, ruido, etc.'}
+      ]
+    },
+
+    /* 6 · Salones y eventos */
+    { id:'eventos', icon:'🎉', eyebrow:'Reuniones y celebraciones', titulo:'Salones y <span class="hl">eventos</span>',
+      subtitulo:'Captura cada salón y su capacidad por tipo de montaje. El agente cotizará y orientará grupos al instante.',
+      fields:[
+        {key:'tiene_eventos',type:'toggle-only',label:'¿El hotel ofrece espacios para eventos?',sub:'Si lo desactivas, el agente dirá que no hay salones disponibles.'},
+        {key:'eventos_intro',label:'Notas generales de eventos',type:'textarea',full:true,ph:'Ej. 8 salas de reuniones, espacio total 265 m², coordinador de eventos disponible.'},
+        {key:'salas',type:'repeater',label:'Salones',addLabel:'Agregar salón',
+          item:{ title:'nombre',
+            fields:[
+              {key:'nombre',label:'Nombre del salón',type:'text',half:true,ph:'Ej. Salón H-G'},
+              {key:'area',label:'Área (m²)',type:'text',half:true,ph:'Ej. 82'}
+            ],
+            capacities:[
+              {key:'banquete',label:'Banquete'},{key:'conferencia',label:'Conferencia'},
+              {key:'mesa_cuadrada',label:'Mesa cuadrada'},{key:'coctel',label:'Recepción / Cóctel'},
+              {key:'escolar',label:'Escolar'},{key:'teatro',label:'Teatro'},{key:'forma_u',label:'Forma de U'}
+            ]}}
+      ]
+    },
+
+    /* 7 · Voz del agente */
+    { id:'agente', icon:'🤖', eyebrow:'La personalidad de tu IA', titulo:'Voz del <span class="hl">agente</span>',
+      subtitulo:'Cómo debe sonar y comportarse tu agente. Esto define la experiencia que vive el huésped al escribirte.',
+      fields:[
+        {key:'nombre_agente',label:'Nombre del agente',type:'text',half:true,ph:'Ej. Sofía, Concierge Virtual'},
+        {key:'idiomas',label:'Idiomas que debe manejar',type:'text',half:true,ph:'Ej. Español e inglés'},
+        {key:'tono',label:'Tono / personalidad',type:'select',full:true,options:['','Cálido y cercano','Profesional y formal','Amigable y casual','Lujo y exclusividad','Eficiente y directo']},
+        {key:'tono_detalle',label:'Describe el estilo con tus palabras',type:'textarea',full:true,ph:'Ej. Trato de usted, cordial, usa el nombre del huésped, nunca presiona, cierra siempre ofreciendo ayuda.'},
+        {key:'horario_atencion',label:'Horario de atención del agente',type:'text',half:true,ph:'Ej. 24/7'},
+        {key:'objetivo',label:'Objetivo principal del agente',type:'select',half:true,options:['','Reservar habitaciones','Resolver dudas','Cotizar eventos','Atención post-venta','Todo lo anterior']},
+        {key:'siempre',label:'Siempre debe…',type:'textarea',full:true,ph:'Ej. Confirmar fechas y número de huéspedes, ofrecer el enlace de reserva oficial, despedirse cordialmente.'},
+        {key:'nunca',label:'Nunca debe…',type:'textarea',full:true,ph:'Ej. Inventar precios, prometer disponibilidad sin confirmar, dar datos de otro hotel, compartir información interna.'},
+        {key:'escalamiento',label:'¿Cuándo pasar a un humano?',type:'textarea',full:true,ph:'Ej. Quejas, grupos mayores a 10 habitaciones, cobros, o si el huésped lo pide.'},
+        {key:'contacto_humano',label:'Contacto para escalar',type:'text',full:true,ph:'Ej. Recepción ext. 0 / WhatsApp +52...'}
+      ]
+    },
+
+    /* 8 · Enlaces */
+    { id:'enlaces', icon:'🔗', eyebrow:'Fuentes oficiales', titulo:'Enlaces <span class="hl">oficiales</span>',
+      subtitulo:'Las URLs que el agente compartirá. Usa siempre los enlaces oficiales para no perder reservas.',
+      fields:[
+        {key:'url_reservas',label:'Enlace de reservación oficial',type:'url',full:true,ph:'https://...'},
+        {key:'url_es',label:'Página principal (ES)',type:'url',half:true,ph:'https://...'},
+        {key:'url_en',label:'Página principal (EN)',type:'url',half:true,ph:'https://...'},
+        {key:'url_habitaciones',label:'Habitaciones',type:'url',half:true,ph:'https://...'},
+        {key:'url_eventos',label:'Eventos',type:'url',half:true,ph:'https://...'},
+        {key:'url_galeria',label:'Galería de fotos',type:'url',half:true,ph:'https://...'},
+        {key:'url_ubicacion',label:'Ubicación / mapa',type:'url',half:true,ph:'https://...'},
+        {key:'redes',label:'Redes sociales',type:'textarea',full:true,ph:'Instagram, Facebook, TikTok… (una por línea)'}
+      ]
+    },
+
+    /* 9 · Revisión */
+    { id:'revision', tipo:'review', icon:'✅', eyebrow:'Casi listo', titulo:'Revisa y <span class="hl">entrega</span>',
+      subtitulo:'Verifica que todo esté correcto. Puedes editar cualquier sección y al final descargar tu Base de Conocimiento.' }
+  ]
+};
+
+const ACTIVE_SCHEMA = HOTEL_SCHEMA;
+
+/* ============================================================
+   Estado
+   ============================================================ */
+let state = { current:0, data:{} };
+const stage = document.getElementById('stage');
+
+function load(){
+  try{ const raw = localStorage.getItem(ACTIVE_SCHEMA.storageKey);
+    if(raw){ const p=JSON.parse(raw); state.data=p.data||{}; state.current=p.current||0; } }catch(e){}
+}
+let saveTimer;
+function save(flash){
+  localStorage.setItem(ACTIVE_SCHEMA.storageKey, JSON.stringify(state));
+  const pill=document.getElementById('savePill'), txt=document.getElementById('saveTxt');
+  pill.classList.add('saved'); txt.textContent='Guardado ✓';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{ pill.classList.remove('saved'); txt.textContent='Guardado automático'; },1800);
+}
+function d(stepId){ return state.data[stepId] || (state.data[stepId]={}); }
+
+/* ============================================================
+   Render de campos
+   ============================================================ */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function fieldHTML(f, val){
+  const req = f.req? '<span class="req">*</span>':'';
+  const help = f.help? `<span class="help">${esc(f.help)}</span>`:'';
+  const cls = (f.full?'full':'') + (f.half?'':'');
+  let input='';
+  if(f.type==='textarea'){
+    input=`<textarea data-key="${f.key}" placeholder="${esc(f.ph||'')}">${esc(val)}</textarea>`;
+  }else if(f.type==='select'){
+    input=`<select data-key="${f.key}">`+f.options.map(o=>`<option value="${esc(o)}" ${o===val?'selected':''}>${o===''?'Selecciona…':esc(o)}</option>`).join('')+`</select>`;
+  }else{
+    input=`<input data-key="${f.key}" type="${f.type==='time'?'time':(f.type==='number'?'number':'text')}" placeholder="${esc(f.ph||'')}" value="${esc(val)}" />`;
+  }
+  return `<div class="field ${f.full?'full':''}" data-field="${f.key}">
+    <label>${esc(f.label)} ${req}</label>${help}${input}
+    <span class="errmsg">Este campo es obligatorio</span></div>`;
+}
+
+function toggleHTML(t, store){
+  const on = !!store[t.key];
+  const detailVal = store[t.key+'_detalle']||'';
+  return `<div class="toggle-field ${on?'on':''}" data-toggle="${t.key}">
+    <div class="toggle-row">
+      <div class="tl"><strong>${esc(t.label)}</strong>${t.sub?`<span>${esc(t.sub)}</span>`:''}</div>
+      <label class="switch"><input type="checkbox" data-toggle-input="${t.key}" ${on?'checked':''}/><span class="slider"></span></label>
+    </div>
+    ${t.detail?`<div class="toggle-detail"><div class="field"><input data-key="${t.key}_detalle" placeholder="${esc(t.detail)}" value="${esc(detailVal)}" /></div></div>`:''}
+  </div>`;
+}
+
+function repeaterHTML(f, store){
+  const items = store[f.key] || [];
+  const rows = items.map((it,idx)=>repItemHTML(f,it,idx)).join('');
+  return `<div class="repeater" data-repeater="${f.key}">
+    <div class="rep-head"><div class="rt">${esc(f.label)} <span class="count">${items.length}</span></div></div>
+    <div class="rep-list">${rows||'<div class="section-note"><span class="ico">👉</span><span>Aún no agregas ninguno. Usa el botón de abajo para empezar.</span></div>'}</div>
+    <button class="add-btn" data-add="${f.key}"><span>＋</span> ${esc(f.addLabel)}</button>
+  </div>`;
+}
+function repItemHTML(f, it, idx){
+  const fields = f.item.fields.map(sf=>{
+    const v = it[sf.key]||'';
+    if(sf.type==='textarea') return `<div class="field full" data-field="${sf.key}"><label>${esc(sf.label)}</label><textarea data-rep="${f.key}" data-idx="${idx}" data-key="${sf.key}" placeholder="${esc(sf.ph||'')}">${esc(v)}</textarea></div>`;
+    return `<div class="field ${sf.full?'full':''}" data-field="${sf.key}"><label>${esc(sf.label)}</label><input data-rep="${f.key}" data-idx="${idx}" data-key="${sf.key}" type="${sf.type==='number'?'number':'text'}" placeholder="${esc(sf.ph||'')}" value="${esc(v)}" /></div>`;
+  }).join('');
+  let caps='';
+  if(f.item.capacities){
+    caps=`<div class="cap-grid">`+f.item.capacities.map(c=>`<div class="cap"><label>${esc(c.label)}</label><input data-rep="${f.key}" data-idx="${idx}" data-key="${c.key}" type="number" min="0" placeholder="0" value="${esc(it[c.key]||'')}" /></div>`).join('')+`</div>`;
+  }
+  return `<div class="rep-item">
+    <span class="rep-num">#${idx+1}</span>
+    <button class="rep-del" data-del="${f.key}" data-idx="${idx}" title="Eliminar">✕</button>
+    <div class="rep-grid">${fields}${caps}</div></div>`;
+}
+
+/* ============================================================
+   Render del paso
+   ============================================================ */
+function render(){
+  const step = ACTIVE_SCHEMA.steps[state.current];
+  let html='';
+  if(step.tipo==='intro') html=renderIntro(step);
+  else if(step.tipo==='review') html=renderReview(step);
+  else html=renderForm(step);
+  stage.innerHTML=`<div class="step-view">${html}</div>`;
+  bindStep(step);
+  renderProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderIntro(step){
+  return `<div class="card"><div class="intro">
+    <div class="badge">✨ Onboarding interactivo · intralabs.ai</div>
+    <h1>${step.titulo}</h1>
+    <p class="lead">${esc(step.lead)}</p>
+    <div class="feats">${step.feats.map(f=>`<div class="feat"><div class="fi">${f.i}</div><strong>${esc(f.t)}</strong><span>${esc(f.d)}</span></div>`).join('')}</div>
+    <div class="meta-row">${step.meta.map(m=>`<span>${m.k} <b>${esc(m.v)}</b></span>`).join('')}</div>
+    <button class="btn primary" id="startBtn" style="font-size:16px;padding:16px 38px">Comenzar ahora →</button>
+  </div></div>`;
+}
+
+function renderForm(step){
+  const store=d(step.id);
+  let body='';
+  if(step.fields){
+    body+='<div class="grid">';
+    step.fields.forEach(f=>{
+      if(f.type==='repeater') body+=repeaterHTML(f,store);
+      else if(f.type==='toggle-only'){
+        const on = store[f.key]===undefined? true : !!store[f.key];
+        body+=`<div class="toggle-field ${on?'on':''}" data-toggle="${f.key}" style="grid-column:1/-1">
+          <div class="toggle-row"><div class="tl"><strong>${esc(f.label)}</strong>${f.sub?`<span>${esc(f.sub)}</span>`:''}</div>
+          <label class="switch"><input type="checkbox" data-toggle-input="${f.key}" ${on?'checked':''}/><span class="slider"></span></label></div></div>`;
+      }
+      else body+=fieldHTML(f, store[f.key]||'');
+    });
+    body+='</div>';
+  }
+  if(step.toggles){
+    body+='<div class="grid">'+step.toggles.map(t=>toggleHTML(t,store)).join('')+'</div>';
+  }
+  const isLast = state.current===ACTIVE_SCHEMA.steps.length-1;
+  return `<div class="card">
+    <div class="card-head">
+      <div class="eyebrow"><span class="ico">${step.icon||''}</span> ${esc(step.eyebrow||'')}</div>
+      <h1>${step.titulo}</h1>
+      <p>${esc(step.subtitulo||'')}</p>
+    </div>
+    <div class="card-body">${body}
+      <div class="nav-row">
+        <button class="btn ghost" id="prevBtn">← Atrás</button>
+        <div class="btn-spacer"></div>
+        <button class="btn primary" id="nextBtn">Continuar →</button>
+      </div>
+    </div></div>`;
+}
+
+function renderReview(step){
+  let blocks='';
+  ACTIVE_SCHEMA.steps.forEach((s,i)=>{
+    if(s.tipo==='intro'||s.tipo==='review') return;
+    blocks+=reviewBlock(s,i);
+  });
+  return `<div class="card">
+    <div class="card-head">
+      <div class="eyebrow"><span class="ico">${step.icon}</span> ${esc(step.eyebrow)}</div>
+      <h1>${step.titulo}</h1><p>${esc(step.subtitulo)}</p>
+    </div>
+    <div class="card-body">
+      ${blocks}
+      <div class="export-row">
+        <div class="export-card"><div class="ei">🧩</div><h4>JSON estructurado</h4>
+          <p>Archivo listo para cargar en tu sistema / agente de IA.</p>
+          <button class="btn primary" id="dlJson">Descargar JSON</button></div>
+        <div class="export-card"><div class="ei">📄</div><h4>Documento Base de Conocimiento</h4>
+          <p>Documento formateado para revisión humana o impresión a PDF.</p>
+          <button class="btn warm" id="dlDoc">Generar documento</button></div>
+      </div>
+      <div class="nav-row" style="margin-top:24px">
+        <button class="btn ghost" id="prevBtn">← Atrás</button>
+        <div class="btn-spacer"></div>
+        <button class="btn" id="resetBtn" style="color:var(--err);border-color:rgba(255,107,107,.3)">Reiniciar todo</button>
+      </div>
+    </div></div>`;
+}
+
+function reviewBlock(s, idx){
+  const store=d(s.id);
+  let rows='';
+  (s.fields||[]).forEach(f=>{
+    if(f.type==='repeater'){
+      const items=store[f.key]||[];
+      rows+=`<div class="kv full"><span class="k">${esc(f.label)} (${items.length})</span><span class="v">${items.length? items.map(it=>esc(it[f.item.title]||'(sin nombre)')).join(' · ') : '—'}</span></div>`;
+      return;
+    }
+    if(f.type==='toggle-only'){ const on=store[f.key]===undefined?true:!!store[f.key];
+      rows+=`<div class="kv"><span class="k">${esc(f.label)}</span><span class="v">${on?'Sí':'No'}</span></div>`; return; }
+    const v=store[f.key];
+    rows+=`<div class="kv ${v?'':'empty'} ${f.full||f.type==='textarea'?'full':''}"><span class="k">${esc(f.label)}</span><span class="v">${v?esc(v):'Sin completar'}</span></div>`;
+  });
+  (s.toggles||[]).forEach(t=>{
+    const on=!!store[t.key]; const det=store[t.key+'_detalle'];
+    rows+=`<div class="kv"><span class="k">${esc(t.label)}</span><span class="v">${on?('Sí'+(det?' — '+esc(det):'')):'No'}</span></div>`;
+  });
+  return `<div class="review-block">
+    <div class="rb-head" data-goto="${idx}"><h3>${s.icon||''} ${stripTags(s.titulo)}</h3><span class="edit">Editar ✎</span></div>
+    <div class="rb-body">${rows||'<div class="kv full empty"><span class="v">Sin datos</span></div>'}</div></div>`;
+}
+function stripTags(s){ return String(s).replace(/<[^>]+>/g,''); }
+
+/* ============================================================
+   Progreso / navegación
+   ============================================================ */
+function renderProgress(){
+  const total=ACTIVE_SCHEMA.steps.length;
+  const pct=Math.round((state.current/(total-1))*100);
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=completionPct()+'% completado';
+  document.getElementById('progressLabel').textContent=`Paso ${state.current+1} de ${total}`;
+  const nav=document.getElementById('stepsNav');
+  nav.innerHTML=ACTIVE_SCHEMA.steps.map((s,i)=>{
+    if(s.tipo==='intro') return '';
+    const cls=i===state.current?'active':(i<state.current?'done':'');
+    return `<div class="step-chip ${cls}" data-step="${i}"><span class="n"><span>${i}</span></span>${stripTags(s.titulo)}</div>`;
+  }).join('');
+  nav.querySelectorAll('[data-step]').forEach(el=>el.onclick=()=>go(+el.dataset.step));
+  document.getElementById('progressWrap').style.display = ACTIVE_SCHEMA.steps[state.current].tipo==='intro'?'none':'block';
+}
+function completionPct(){
+  let total=0,filled=0;
+  ACTIVE_SCHEMA.steps.forEach(s=>{
+    (s.fields||[]).forEach(f=>{
+      if(f.type==='repeater'||f.type==='toggle-only') return;
+      total++; if((d(s.id)[f.key]||'').toString().trim()) filled++;
+    });
+  });
+  return total? Math.round(filled/total*100):0;
+}
+
+function go(i){ state.current=Math.max(0,Math.min(ACTIVE_SCHEMA.steps.length-1,i)); save(); render(); }
+function next(){ if(validateStep()) go(state.current+1); }
+function prev(){ go(state.current-1); }
+
+function validateStep(){
+  const step=ACTIVE_SCHEMA.steps[state.current];
+  if(!step.fields) return true;
+  let ok=true, firstBad=null;
+  step.fields.forEach(f=>{
+    if(f.req){
+      const v=(d(step.id)[f.key]||'').toString().trim();
+      const el=stage.querySelector(`[data-field="${f.key}"]`);
+      if(!v){ ok=false; if(el){el.classList.add('invalid'); if(!firstBad)firstBad=el;} }
+      else if(el) el.classList.remove('invalid');
+    }
+  });
+  if(!ok && firstBad){ firstBad.scrollIntoView({behavior:'smooth',block:'center'}); toast('Completa los campos obligatorios','⚠️'); }
+  return ok;
+}
+
+/* ============================================================
+   Bind de eventos del paso actual
+   ============================================================ */
+function bindStep(step){
+  const startBtn=document.getElementById('startBtn'); if(startBtn) startBtn.onclick=()=>go(1);
+  const nextBtn=document.getElementById('nextBtn'); if(nextBtn) nextBtn.onclick=next;
+  const prevBtn=document.getElementById('prevBtn'); if(prevBtn) prevBtn.onclick=prev;
+  if(state.current===ACTIVE_SCHEMA.steps.length-1) bindReview();
+
+  // inputs simples
+  stage.querySelectorAll('[data-key]').forEach(el=>{
+    if(el.hasAttribute('data-rep')) return;
+    el.addEventListener('input',()=>{ d(step.id)[el.dataset.key]=el.value; save();
+      const fld=el.closest('.field'); if(fld&&fld.classList.contains('invalid')&&el.value.trim()) fld.classList.remove('invalid'); });
+  });
+  // toggles
+  stage.querySelectorAll('[data-toggle-input]').forEach(el=>{
+    el.addEventListener('change',()=>{ const k=el.dataset.toggleInput; d(step.id)[k]=el.checked;
+      const box=el.closest('.toggle-field'); if(box) box.classList.toggle('on',el.checked); save(); });
+  });
+  // repetidores: inputs
+  stage.querySelectorAll('[data-rep]').forEach(el=>{
+    el.addEventListener('input',()=>{ const k=el.dataset.rep, idx=+el.dataset.idx;
+      const arr=d(step.id)[k]||(d(step.id)[k]=[]); (arr[idx]||(arr[idx]={}))[el.dataset.key]=el.value; save();
+      const rt=stage.querySelector(`[data-repeater="${k}"] .count`); });
+  });
+  // agregar item
+  stage.querySelectorAll('[data-add]').forEach(btn=>{
+    btn.onclick=()=>{ const k=btn.dataset.add; const arr=d(step.id)[k]||(d(step.id)[k]=[]); arr.push({}); save();
+      rerenderRepeater(step,k); };
+  });
+  // eliminar item
+  bindDelete(step);
+}
+function bindDelete(step){
+  stage.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.onclick=()=>{ const k=btn.dataset.del, idx=+btn.dataset.idx; const arr=d(step.id)[k]||[]; arr.splice(idx,1); save();
+      rerenderRepeater(step,k); };
+  });
+}
+function rerenderRepeater(step,k){
+  const f=step.fields.find(x=>x.key===k);
+  const wrap=stage.querySelector(`[data-repeater="${k}"]`);
+  const tmp=document.createElement('div'); tmp.innerHTML=repeaterHTML(f,d(step.id));
+  wrap.replaceWith(tmp.firstElementChild);
+  // rebind solo este paso (simple y seguro)
+  bindStep(step);
+}
+
+function bindReview(){
+  stage.querySelectorAll('[data-goto]').forEach(el=>el.onclick=()=>go(+el.dataset.goto));
+  document.getElementById('dlJson').onclick=downloadJSON;
+  document.getElementById('dlDoc').onclick=openDocument;
+  document.getElementById('resetBtn').onclick=()=>{
+    if(confirm('¿Seguro que quieres borrar todo y empezar de cero?')){ localStorage.removeItem(ACTIVE_SCHEMA.storageKey); state={current:0,data:{}}; render(); }
+  };
+}
+
+/* ============================================================
+   Exportación
+   ============================================================ */
+function buildExport(){
+  const out={ giro:ACTIVE_SCHEMA.giro, generado:new Date().toISOString(), datos:{} };
+  ACTIVE_SCHEMA.steps.forEach(s=>{ if(s.tipo==='intro'||s.tipo==='review')return; out.datos[s.id]=d(s.id); });
+  return out;
+}
+function downloadJSON(){
+  const blob=new Blob([JSON.stringify(buildExport(),null,2)],{type:'application/json'});
+  triggerDownload(blob, slug()+'-base-conocimiento.json'); toast('JSON descargado','✓');
+}
+function slug(){ return ((d('general').nombre_oficial||'hotel').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'hotel'); }
+function triggerDownload(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+function v(stepId,key){ return d(stepId)[key]||''; }
+function openDocument(){
+  const html=buildDocHTML();
+  const w=window.open('','_blank');
+  if(!w){ // fallback: descarga el .html
+    const blob=new Blob([html],{type:'text/html'}); triggerDownload(blob, slug()+'-base-conocimiento.html');
+    toast('Documento descargado (HTML)','✓'); return;
+  }
+  w.document.write(html); w.document.close(); toast('Documento generado — usa Imprimir → PDF','📄');
+}
+
+function buildDocHTML(){
+  const g=k=>esc(v('general',k));
+  const repList=(stepId,key,render)=>{ const arr=d(stepId)[key]||[]; return arr.length? arr.map(render).join(''):'<p class="muted">No especificado.</p>'; };
+  const toggleLine=(stepId,key,label)=>{ const on=!!d(stepId)[key]; const det=d(stepId)[key+'_detalle']; return on?`<li><b>${esc(label)}:</b> Sí${det?' — '+esc(det):''}</li>`:''; };
+  const field=(stepId,key,label)=>{ const val=v(stepId,key); return val?`<p><b>${esc(label)}:</b> ${esc(val).replace(/\n/g,'<br>')}</p>`:''; };
+
+  const servicios=ACTIVE_SCHEMA.steps.find(s=>s.id==='servicios').toggles.map(t=>toggleLine('servicios',t.key,t.label)).filter(Boolean).join('')||'<li class="muted">No especificado.</li>';
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Base de Conocimiento — ${g('nombre_oficial')||'Hotel'}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box} body{font-family:'Inter',sans-serif;color:#0e1b2a;max-width:820px;margin:0 auto;padding:54px 48px;line-height:1.6}
+    h1{font-family:'Source Serif 4',serif;font-size:30px;color:#01101d;margin-bottom:4px}
+    .sub{color:#5a6b7d;font-size:13px;margin-bottom:30px;border-bottom:3px solid #0099ff;padding-bottom:18px}
+    h2{font-family:'Source Serif 4',serif;font-size:19px;color:#0072d6;margin:30px 0 12px;padding-bottom:6px;border-bottom:1px solid #dfe7ef}
+    p{margin:5px 0;font-size:14px} ul{margin:6px 0 6px 4px;font-size:14px} li{margin:3px 0;list-style:none}
+    .muted{color:#9aa7b4;font-style:italic} .room,.hall{background:#f5f8fb;border:1px solid #e3eaf2;border-radius:10px;padding:14px 16px;margin:10px 0}
+    .room h3,.hall h3{font-size:15px;color:#01101d;margin-bottom:6px} .caps{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .cap{background:#eaf4ff;color:#0072d6;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
+    .brandbar{display:flex;align-items:center;gap:10px;margin-bottom:24px;font-weight:700;color:#0099ff}
+    .brandbar .l{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0099ff,#0066cc);color:#fff;display:grid;place-items:center}
+    @media print{body{padding:24px}a{color:inherit;text-decoration:none}}
+  </style></head><body>
+  <div class="brandbar"><span class="l">i</span> intra · Base de Conocimiento</div>
+  <h1>${g('nombre_oficial')||'Base de Conocimiento'}</h1>
+  <div class="sub">${g('marca')?g('marca')+' · ':''}${g('codigo')?'Código '+g('codigo')+' · ':''}Generado ${new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</div>
+
+  <h2>1 · Información general</h2>
+  ${field('general','descripcion','Descripción')}
+  ${field('general','direccion','Dirección')}
+  ${field('general','telefono','Teléfono')}${field('general','email','Email')}${field('general','whatsapp','WhatsApp')}${field('general','sitio_web','Sitio web')}
+  ${field('general','checkin','Check-in')}${field('general','checkout','Check-out')}${field('general','recepcion','Recepción')}${field('general','num_habitaciones','Habitaciones')}${field('general','categoria','Categoría')}
+
+  <h2>2 · Ubicación y accesos</h2>
+  ${field('ubicacion','aeropuerto','Aeropuerto')}${field('ubicacion','aeropuerto_dist','Distancia al aeropuerto')}${field('ubicacion','traslado_aeropuerto','Traslado al aeropuerto')}${field('ubicacion','traslado_local','Traslado local')}${field('ubicacion','estacionamiento','Estacionamiento')}${field('ubicacion','carga_ev','Carga de autos eléctricos')}
+  <p><b>Puntos de interés cercanos:</b></p>
+  <ul>${repList('ubicacion','puntos',p=>`<li>• ${esc(p.nombre||'')} ${p.distancia?'— '+esc(p.distancia):''}</li>`)}</ul>
+
+  <h2>3 · Servicios e instalaciones</h2><ul>${servicios}</ul>
+
+  <h2>4 · Tipos de habitación</h2>
+  ${repList('habitaciones','habs',h=>`<div class="room"><h3>${esc(h.nombre||'Habitación')}</h3>
+    <p>${[h.capacidad&&'Capacidad: '+esc(h.capacidad),h.camas&&'Camas: '+esc(h.camas),h.tamano&&'Tamaño: '+esc(h.tamano),h.vista&&esc(h.vista),h.precio_desde&&'Desde '+esc(h.precio_desde)].filter(Boolean).join(' · ')}</p>
+    ${h.amenidades?`<p class="muted">${esc(h.amenidades)}</p>`:''}</div>`)}
+
+  <h2>5 · Políticas</h2>
+  ${field('politicas','mascotas_politica','Mascotas')}${field('politicas','fumadores','Fumadores')}${field('politicas','cancelacion','Cancelación')}${field('politicas','edad_minima','Edad mínima')}${field('politicas','metodos_pago','Métodos de pago')}${field('politicas','deposito','Depósito')}${field('politicas','ninos','Niños')}${field('politicas','extras_politica','Otras políticas')}
+
+  <h2>6 · Salones y eventos</h2>
+  ${field('eventos','eventos_intro','Notas generales')}
+  ${repList('eventos','salas',s=>{const caps=[['Banquete','banquete'],['Conferencia','conferencia'],['Mesa cuadrada','mesa_cuadrada'],['Cóctel','coctel'],['Escolar','escolar'],['Teatro','teatro'],['Forma U','forma_u']].filter(c=>s[c[1]]).map(c=>`<span class="cap">${c[0]}: ${esc(s[c[1]])}</span>`).join('');
+    return `<div class="hall"><h3>${esc(s.nombre||'Salón')} ${s.area?'· '+esc(s.area)+' m²':''}</h3><div class="caps">${caps||'<span class="muted">Sin capacidades</span>'}</div></div>`;})}
+
+  <h2>7 · Voz del agente de IA</h2>
+  ${field('agente','nombre_agente','Nombre del agente')}${field('agente','idiomas','Idiomas')}${field('agente','tono','Tono')}${field('agente','tono_detalle','Estilo')}${field('agente','horario_atencion','Horario')}${field('agente','objetivo','Objetivo')}${field('agente','siempre','Siempre debe')}${field('agente','nunca','Nunca debe')}${field('agente','escalamiento','Escalamiento')}${field('agente','contacto_humano','Contacto humano')}
+
+  <h2>8 · Enlaces oficiales</h2>
+  ${field('enlaces','url_reservas','Reservación oficial')}${field('enlaces','url_es','Sitio (ES)')}${field('enlaces','url_en','Sitio (EN)')}${field('enlaces','url_habitaciones','Habitaciones')}${field('enlaces','url_eventos','Eventos')}${field('enlaces','url_galeria','Galería')}${field('enlaces','url_ubicacion','Ubicación')}${field('enlaces','redes','Redes sociales')}
+  </body></html>`;
+}
+
+/* ============================================================
+   Toast + init
+   ============================================================ */
+function toast(msg,icon){ const t=document.getElementById('toast'); document.getElementById('toastTxt').textContent=msg;
+  t.querySelector('.ti').textContent=icon||'✓'; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
+
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ const nb=document.getElementById('nextBtn'); if(nb){e.preventDefault();nb.click();} }});
+
+load(); render();
+</script>
+</body>
+</html>
