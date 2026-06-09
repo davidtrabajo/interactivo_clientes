@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Intra · Panel administrativo — Bases de Conocimiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="bg-aurora"></div>
+<div class="bg-grid"></div>
+<div class="orb a"></div>
+<div class="orb b"></div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="logo">i</div>
+    <h1>Panel administrativo</h1>
+    <p>Acceso interno · Intralabs</p>
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password" />
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" id="loginBtn" style="width:100%;justify-content:center">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="adminApp" style="display:none">
+  <div class="topbar">
+    <div class="brand"><div class="logo">i</div><div>intra<small>Panel · Bases de Conocimiento</small></div></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn sm" id="refreshBtn">⟳ Actualizar</button>
+      <button class="btn sm ghost" id="logoutBtn">Salir</button>
+    </div>
+  </div>
+
+  <div class="stat-row" id="statRow"></div>
+
+  <div class="admin-toolbar">
+    <div class="search"><span class="si">🔎</span><input id="searchInput" placeholder="Buscar por nombre de hotel…" /></div>
+  </div>
+
+  <div class="table-card">
+    <table class="subs">
+      <thead><tr><th>Hotel</th><th>Estado</th><th>Avance</th><th>Última actualización</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState" style="display:none"></div>
+  </div>
+</div>
+
+<!-- DRAWER DETALLE -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div><h2 id="dTitle">—</h2><div class="meta" id="dMeta"></div></div>
+    <button class="drawer-close" id="drawerClose">✕</button>
+  </div>
+  <div class="drawer-actions">
+    <button class="btn primary sm" id="expJson">🧩 Exportar JSON</button>
+    <button class="btn warm sm" id="expDoc">📄 Generar Documento</button>
+    <button class="btn sm" id="delBtn" style="color:var(--err);border-color:rgba(255,107,107,.3);margin-left:auto">🗑 Eliminar</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<div class="toast" id="toast"><span class="ti">✓</span><span id="toastTxt"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="schema.js"></script>
+<script src="app-data.js"></script>
+
+<script>
+/* ============================================================
+   INTRA · Panel administrativo
+   ============================================================ */
+const SESSION_KEY='intra_admin_ok';
+let SUBS=[], CURRENT=null;
+
+/* ---------- Login ---------- */
+function showApp(){ document.getElementById('loginWrap').style.display='none'; document.getElementById('adminApp').style.display='block'; loadData(); }
+function tryLogin(){
+  const val=document.getElementById('pass').value;
+  if(val===(window.ADMIN_CONFIG&&window.ADMIN_CONFIG.password)){ sessionStorage.setItem(SESSION_KEY,'1'); showApp(); }
+  else { document.getElementById('loginErr').textContent='Contraseña incorrecta'; }
+}
+document.getElementById('loginBtn').onclick=tryLogin;
+document.getElementById('pass').addEventListener('keydown',e=>{ if(e.key==='Enter') tryLogin(); });
+document.getElementById('logoutBtn').onclick=()=>{ sessionStorage.removeItem(SESSION_KEY); location.reload(); };
+document.getElementById('refreshBtn').onclick=loadData;
+document.getElementById('searchInput').addEventListener('input',renderRows);
+
+/* ---------- Carga de datos ---------- */
+async function loadData(){
+  const tbody=document.getElementById('rows');
+  if(!KB.configured()){ showEmpty('⚙️','Falta conectar el backend','Configura la URL y la anon key de Supabase en <b>config.js</b> para ver los envíos.'); document.getElementById('statRow').innerHTML=''; return; }
+  tbody.innerHTML=`<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-dim)"><span class="spin"></span> Cargando…</td></tr>`;
+  try{ SUBS=await KB.list(); renderStats(); renderRows(); }
+  catch(e){ console.error(e); showEmpty('⚠️','Error al cargar','No se pudo leer la base de datos: '+KB.esc(e.message||e)); }
+}
+function renderStats(){
+  const total=SUBS.length, enviados=SUBS.filter(s=>s.status==='enviado').length;
+  const avg=total? Math.round(SUBS.reduce((a,s)=>a+(s.completion||0),0)/total):0;
+  const hoy=SUBS.filter(s=>{ const d=new Date(s.updated_at); const n=new Date(); return d.toDateString()===n.toDateString(); }).length;
+  document.getElementById('statRow').innerHTML=`
+    <div class="stat a"><div class="n">${total}</div><div class="l">Envíos totales</div></div>
+    <div class="stat b"><div class="n">${enviados}</div><div class="l">Enviados</div></div>
+    <div class="stat c"><div class="n">${avg}%</div><div class="l">Avance promedio</div></div>
+    <div class="stat"><div class="n">${hoy}</div><div class="l">Actualizados hoy</div></div>`;
+}
+function renderRows(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+  const tbody=document.getElementById('rows'); const empty=document.getElementById('emptyState');
+  const items=SUBS.filter(s=>!q || (s.nombre||'').toLowerCase().includes(q));
+  if(!SUBS.length){ tbody.innerHTML=''; showEmpty('📭','Aún no hay envíos','Cuando un cliente complete el wizard, aparecerá aquí.'); return; }
+  empty.style.display='none';
+  if(!items.length){ tbody.innerHTML=`<tr><td colspan="5" style="padding:30px;text-align:center;color:var(--text-dim)">Sin resultados para “${KB.esc(q)}”.</td></tr>`; return; }
+  tbody.innerHTML=items.map(s=>{
+    const c=s.completion||0;
+    return `<tr data-id="${s.id}">
+      <td><div class="name">${KB.esc(s.nombre||'Sin nombre')}</div><div class="sub">Folio ${String(s.id).slice(0,8).toUpperCase()}</div></td>
+      <td><span class="badge ${s.status==='enviado'?'enviado':'borrador'}">${s.status==='enviado'?'Enviado':'Borrador'}</span></td>
+      <td><span class="mini-bar"><i style="width:${c}%"></i></span>${c}%</td>
+      <td>${fmtDate(s.updated_at)}</td>
+      <td style="text-align:right;color:var(--accent-light)">Ver →</td></tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>openDrawer(tr.dataset.id));
+}
+function showEmpty(icon,title,msg){ const empty=document.getElementById('emptyState'); document.getElementById('rows').innerHTML='';
+  empty.style.display='block'; empty.innerHTML=`<div class="ei">${icon}</div><h3 style="font-size:18px;margin-bottom:6px">${title}</h3><p>${msg}</p>`; }
+function fmtDate(s){ if(!s)return'—'; const d=new Date(s); return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+
+/* ---------- Drawer de detalle ---------- */
+function openDrawer(id){
+  CURRENT=SUBS.find(s=>String(s.id)===String(id)); if(!CURRENT) return;
+  const data=CURRENT.data||{};
+  document.getElementById('dTitle').textContent=CURRENT.nombre||'Sin nombre';
+  document.getElementById('dMeta').innerHTML=`Folio <b>${String(CURRENT.id).slice(0,8).toUpperCase()}</b> · ${CURRENT.completion||0}% · ${fmtDate(CURRENT.updated_at)}`;
+  document.getElementById('drawerBody').innerHTML=renderDetail(data);
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('open');
+}
+function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerBackdrop').classList.remove('open'); CURRENT=null; }
+document.getElementById('drawerClose').onclick=closeDrawer;
+document.getElementById('drawerBackdrop').onclick=closeDrawer;
+
+function renderDetail(data){
+  let html='';
+  ACTIVE_SCHEMA.steps.forEach(s=>{
+    if(s.tipo==='intro'||s.tipo==='review') return;
+    const store=data[s.id]||{}; let rows='';
+    (s.fields||[]).forEach(f=>{
+      if(f.type==='repeater'){ const items=store[f.key]||[];
+        const chips=items.map(it=>`<span class="c">${KB.esc(it[f.item.title]||'(sin nombre)')}</span>`).join('');
+        rows+=`<div class="kv"><span class="k">${KB.esc(f.label)} (${items.length})</span><span class="v">${items.length?`<div class="chip-list">${chips}</div>`:'—'}</span></div>`; return; }
+      if(f.type==='toggle-only'){ const on=store[f.key]===undefined?true:!!store[f.key];
+        rows+=`<div class="kv"><span class="k">${KB.esc(f.label)}</span><span class="v">${on?'Sí':'No'}</span></div>`; return; }
+      const v=store[f.key]; if(!v) return;
+      rows+=`<div class="kv"><span class="k">${KB.esc(f.label)}</span><span class="v">${KB.esc(v)}</span></div>`;
+    });
+    (s.toggles||[]).forEach(t=>{ const on=!!store[t.key]; if(!on) return; const det=store[t.key+'_detalle'];
+      rows+=`<div class="kv"><span class="k">${KB.esc(t.label)}</span><span class="v">Sí${det?' — '+KB.esc(det):''}</span></div>`; });
+    if(rows) html+=`<div class="dsec"><h4>${s.icon||''} ${KB.stripTags(s.titulo)}</h4>${rows}</div>`;
+  });
+  return html||'<p style="color:var(--text-dim)">Sin datos capturados.</p>';
+}
+
+/* ---------- Acciones admin ---------- */
+document.getElementById('expJson').onclick=()=>{ if(CURRENT){ KB.downloadJSON(CURRENT.data||{}); toast('JSON descargado','✓'); } };
+document.getElementById('expDoc').onclick=()=>{ if(CURRENT){ const r=KB.openDocument(CURRENT.data||{}); toast(r==='window'?'Documento generado — Imprimir → PDF':'Documento descargado','📄'); } };
+document.getElementById('delBtn').onclick=async()=>{
+  if(!CURRENT) return; if(!confirm('¿Eliminar este envío de forma permanente?')) return;
+  try{ await KB.remove(CURRENT.id); toast('Envío eliminado','✓'); closeDrawer(); loadData(); }
+  catch(e){ toast('No se pudo eliminar: '+(e.message||e),'⚠️',true); }
+};
+
+/* ---------- Toast + init ---------- */
+function toast(msg,icon,isErr){ const t=document.getElementById('toast'); document.getElementById('toastTxt').textContent=msg;
+  t.querySelector('.ti').textContent=icon||'✓'; t.classList.toggle('err',!!isErr); t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2800); }
+
+if(sessionStorage.getItem(SESSION_KEY)==='1') showApp();
+</script>
+</body>
+</html>
